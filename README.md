@@ -19,9 +19,8 @@ pipx install git+https://github.com/bensteinberg/pgreport.git
 Usage
 -----
 
-You must have the SE repo in question on your machine; a future
-version may be able to use a remote. Find the hash of the commit you
-want to report, and run something like
+You must have the SE repo in question on your machine. Find the hash
+of the commit you want to report, and run something like
 
 ```
 pgr --repo path/to/repo --commit 234abcd
