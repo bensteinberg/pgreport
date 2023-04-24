@@ -74,7 +74,7 @@ def run(repo, commit):
                 for x in range(actual + 1)
                 for y in range(actual, len(before))
                 if ' '.join(before[x:y]) in r2.text
-            ], key=lambda tup: (tup[1] - tup[0], tup))[-1]
+            ], key=lambda tup: tup[1] - tup[0])[-1]
             match = ' '.join(before[x:y])
             # get the line number of the match
             idx = r2.text.split('\r\n').index(match) + 1
