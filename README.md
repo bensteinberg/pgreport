@@ -49,3 +49,7 @@ for specifying the type of error reported.
 
 This program does not currently have a mechanism for generating error
 reports for sources other than PG.
+
+This program already undoes curly quotes for comparison with PG source
+text, but may need to undo other typographical changes made for
+SE—maybe using SE tooling?
