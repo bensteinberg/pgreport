@@ -72,13 +72,16 @@ def run(repo, commit):
             (x, y) = sorted([
                 (x, y)
                 for x in range(actual + 1)
-                for y in range(actual, len(before))
+                for y in range(actual, len(before) + 1)
                 if ' '.join(before[x:y]) in r2.text
             ], key=lambda tup: tup[1] - tup[0])[-1]
             match = ' '.join(before[x:y])
             # get the line number of the match
-            idx = r2.text.split('\r\n').index(match) + 1
-
+            idx = [
+                i for i, j
+                in enumerate(r2.text.split('\r\n'))
+                if match in j
+            ][0] + 1
             msg = f"""
 Hi, I’ve been proofing {title} and found a single error:
 
