@@ -28,14 +28,13 @@ pgr --repo path/to/repo --commit 234abcd
 
 You can then copy the output, paste it into your email client, and
 send it to the appropriate address, found in the links above. You
-_must_ confirm that the report is correct.
+_must_ confirm that the report is correct. This program does not have
+a mechanism for sending reports directly; it would be too easy to
+automate it incorrectly and swamp PG or someone else with bad error
+reports.
 
 Notes
 -----
-
-This program does not have a mechanism for sending reports directly;
-it would be too easy to automate it incorrectly and swamp PG or
-someone else with bad error reports.
 
 An open question is what kinds of reports should be sent to PG: OCR
 transcription errors, definitely, but what about typos in the original
