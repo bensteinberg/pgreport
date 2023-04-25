@@ -5,6 +5,7 @@ import pygit2
 import re
 import requests
 from bs4 import BeautifulSoup
+import humanize
 
 
 @click.command()
@@ -56,22 +57,43 @@ def run(repo, commit, style):
         # get the book's plain text
         r2 = requests.get(pg + text_url)
 
+        # prepare the first part of the message
+        c = len(changes)
+        s = '' if c == 1 else 's'
+        count = humanize.apnumber(c)
+        msg = f"""
+Hi, I’ve been proofing {title} and found {count} error{s}:
+
+Title: {title}, by {author}
+Release Date: {release_date} [EBook #{source_url.split("/")[-1]}]
+
+File: {text_url.split("/")[-1]}"""
+
         for change in changes:
             before = change[0]
             after = change[1]
             # the problem here is that lines in SE XHTML are different from
             # the lines in PG plain text, so we need to control the amount
             # of context --
-            # get the index of the actual change
-            actual = [
-                before[i] != after[i] for i in range(len(before))
-            ].index(True)
-            # get the bounds of the largest match including the actual change
+            # get the index of the actual change; because the removal of a
+            # space will make the lengths of the word lists different, step
+            # downward through possible lengths
+            extent = max(len(before), len(after))
+            while True:
+                try:
+                    actual = [
+                        before[i] != after[i] for i in range(extent)
+                    ].index(True)
+                    break
+                except IndexError:
+                    extent -= 1
+            # get the bounds of the largest match including the actual change;
             (x, y) = sorted([
                 (x, y)
                 for x in range(actual + 1)
                 for y in range(actual, len(before) + 1)
                 if ' '.join(before[x:y]) in r2.text
+                and before[actual] in ' '.join(before[x:y])
             ], key=lambda tup: tup[1] - tup[0])[-1]
             match = ' '.join(before[x:y])
             # get the line number of the match
@@ -88,14 +110,7 @@ def run(repo, commit, style):
                 correction = f"{leading}{' '.join(after[x:y])}"
             else:
                 correction = f'{before[actual]} ==> {after[actual]}'
-            # prepare the message
-            msg = f"""
-Hi, I’ve been proofing {title} and found a single error:
-
-Title: {title}, by {author}
-Release Date: {release_date} [EBook #{source_url.split("/")[-1]}]
-
-File: {text_url.split("/")[-1]}
+            msg += f"""
 
 Line {idx}:
 {orig}
