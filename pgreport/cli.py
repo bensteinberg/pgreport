@@ -19,21 +19,16 @@ def run(repo, commit):
     """
     pg = 'https://www.gutenberg.org'
     opf = Path(repo) / 'src/epub/content.opf'
+    root = ET.parse(opf).getroot()
     # get the PG source URL from SE epub metadata
-    source_url = ET.parse(opf).getroot().find(
-        './/{http://purl.org/dc/elements/1.1/}source'
-    ).text
+    source_url = root.find('.//{http://purl.org/dc/elements/1.1/}source').text
     if not source_url.startswith(pg):
         # but maybe this can be extended to non-PG sources
         raise click.ClickException('The source is not PG')
     # get the title from SE epub metadata
-    title = ET.parse(opf).getroot().find(
-        './/{http://purl.org/dc/elements/1.1/}title'
-    ).text
+    title = root.find('.//{http://purl.org/dc/elements/1.1/}title').text
     # get the author from SE epub metadata
-    author = ET.parse(opf).getroot().find(
-        './/{http://purl.org/dc/elements/1.1/}creator'
-    ).text
+    author = root.find('.//{http://purl.org/dc/elements/1.1/}creator').text
 
     # get the diff between the specified commit (or HEAD)
     # and the previous one
@@ -77,11 +72,15 @@ def run(repo, commit):
             ], key=lambda tup: tup[1] - tup[0])[-1]
             match = ' '.join(before[x:y])
             # get the line number of the match
-            idx = [
-                i for i, j
+            (idx, orig) = [
+                (i + 1, j) for i, j
                 in enumerate(r2.text.split('\r\n'))
                 if match in j
-            ][0] + 1
+            ][0]
+            # get leading whitespace if any
+            m = re.search(r'^(\s+)', orig)
+            leading = m.group(1) if m else ''
+            # prepare the message
             msg = f"""
 Hi, I’ve been proofing {title} and found a single error:
 
@@ -91,8 +90,8 @@ Release Date: {release_date} [EBook #{source_url.split("/")[-1]}]
 File: {text_url.split("/")[-1]}
 
 Line {idx}:
-{match}
-{' '.join(after[x:y])}"""
+{orig}
+{leading}{' '.join(after[x:y])}"""
             click.echo(msg)
 
 
