@@ -58,8 +58,8 @@ SE—maybe using SE tooling? Something like the reverse of [typogrify()](https:/
 At the moment, there is one change per report, but a future version
 could allow for multiple changes.
 
-A possible enhancement is to try to confirm that the line for the
-change is correctly identified in the PG text file by measuring the
-Levenshtein distance between the source and correction. This may not
-be worth the effort, since each change requires human review in any
+I've experimented with confirming that the line for the change is
+correctly identified in the PG text file by measuring the Levenshtein
+distance between the source and correction. This is slow, and probably
+not worth the effort, since each change requires human review in any
 case.
