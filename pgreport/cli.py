@@ -10,9 +10,12 @@ from bs4 import BeautifulSoup
 @click.command()
 @click.option('--repo')
 @click.option('--commit', default='HEAD')
+@click.option('--style',
+              type=click.Choice(['PG', 'SE'], case_sensitive=False),
+              default='SE')
 # add a mechanism for expressing the type of change:
 # error in OCR, typo in printed text, other?
-def run(repo, commit):
+def run(repo, commit, style):
     """
     This is an experiment in generating error reports for Project Gutenberg
     from diffs in Standard Ebooks repositories.
@@ -77,9 +80,14 @@ def run(repo, commit):
                 in enumerate(r2.text.split('\r\n'))
                 if match in j
             ][0]
-            # get leading whitespace if any
-            m = re.search(r'^(\s+)', orig)
-            leading = m.group(1) if m else ''
+            # prepare correction string
+            if style == 'SE':
+                # get leading whitespace if any
+                m = re.search(r'^(\s+)', orig)
+                leading = m.group(1) if m else ''
+                correction = f"{leading}{' '.join(after[x:y])}"
+            else:
+                correction = f'{before[actual]} ==> {after[actual]}'
             # prepare the message
             msg = f"""
 Hi, I’ve been proofing {title} and found a single error:
@@ -91,7 +99,7 @@ File: {text_url.split("/")[-1]}
 
 Line {idx}:
 {orig}
-{leading}{' '.join(after[x:y])}"""
+{correction}"""
             click.echo(msg)
 
 
