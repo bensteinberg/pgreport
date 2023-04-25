@@ -52,4 +52,4 @@ reports for sources other than PG.
 
 This program already undoes curly quotes for comparison with PG source
 text, but may need to undo other typographical changes made for
-SE—maybe using SE tooling?
+SE—maybe using SE tooling? Something like the reverse of [typogrify()](https://github.com/standardebooks/tools/blob/6396a5cca8ca4903df2d081cbc8a84a464272c10/se/typography.py#L60-L360).
