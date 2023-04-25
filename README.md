@@ -7,7 +7,8 @@ repository. The output is modeled on the example in [the SE page on reporting
 upstream
 errors](https://standardebooks.org/contribute/report-errors-upstream). See
 also the [PG page on reporting
-errata](https://gutenberg.org/help/errata.html).
+errata](https://gutenberg.org/help/errata.html), which prefers a
+somewhat different format.
 
 Installation
 ------------
@@ -52,3 +53,12 @@ reports for sources other than PG.
 This program already undoes curly quotes for comparison with PG source
 text, but may need to undo other typographical changes made for
 SE—maybe using SE tooling? Something like the reverse of [typogrify()](https://github.com/standardebooks/tools/blob/6396a5cca8ca4903df2d081cbc8a84a464272c10/se/typography.py#L60-L360).
+
+At the moment, there is one change per report, but a future version
+could allow for multiple changes.
+
+A possible enhancement is to try to confirm that the line for the
+change is correctly identified in the PG text file by measuring the
+Levenshtein distance between the source and correction. This may not
+be worth the effort, since each change requires human review in any
+case.
