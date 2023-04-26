@@ -23,20 +23,21 @@ def run(repo, commits, style):
 
     Run with a path to a REPO and the hashes for one or more COMMITS.
     """
+    # read SE epub metadata
     pg = 'https://www.gutenberg.org'
     opf = Path(repo) / 'src/epub/content.opf'
     root = ET.parse(opf).getroot()
-    # get the PG source URL from SE epub metadata
+    # get the PG source URL
     source_url = root.find('.//{http://purl.org/dc/elements/1.1/}source').text
     if not source_url.startswith(pg):
         # but maybe this can be extended to non-PG sources
         raise click.ClickException('The source is not PG')
-    # get the title from SE epub metadata
+    # get the title
     title = root.find('.//{http://purl.org/dc/elements/1.1/}title').text
-    # get the author from SE epub metadata
+    # get the author
     author = root.find('.//{http://purl.org/dc/elements/1.1/}creator').text
 
-    # get the URL of the book's plain text
+    # get the URL of the book's plain text from PG
     r1 = requests.get(source_url)
     soup = BeautifulSoup(r1.text, 'html.parser')
     text_url = soup.find(
@@ -120,9 +121,11 @@ Line {idx}:
 {orig}
 {correction}"""
 
+    # fill in placeholder
     s = '' if corrections == 1 else 's'
     count = humanize.apnumber(corrections)
     msg = msg.replace('PLACEHOLDER', f'{count} error{s}')
+
     click.echo(msg)
 
 
