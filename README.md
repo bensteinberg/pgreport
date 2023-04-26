@@ -21,11 +21,11 @@ pipx install git+https://github.com/bensteinberg/pgreport.git
 Usage
 -----
 
-You must have the SE repo in question on your machine. Find the hash
-of the commit you want to report, and run something like
+You must have the SE repo in question on your machine. Find the
+hash(es) of the commit(s) you want to report, and run something like
 
 ```
-pgr --repo path/to/repo --commit 234abcd
+pgr path/to/repo 234abcd
 ```
 
 You can then copy the output, paste it into your email client, and
