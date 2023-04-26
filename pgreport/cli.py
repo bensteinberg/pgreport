@@ -61,8 +61,7 @@ def run(repo, commit, style):
         c = len(changes)
         s = '' if c == 1 else 's'
         count = humanize.apnumber(c)
-        msg = f"""
-Hi, I’ve been proofing {title} and found {count} error{s}:
+        msg = f"""Hi, I’ve been proofing {title} and found {count} error{s}:
 
 Title: {title}, by {author}
 Release Date: {release_date} [EBook #{source_url.split("/")[-1]}]
@@ -115,7 +114,8 @@ File: {text_url.split("/")[-1]}"""
 Line {idx}:
 {orig}
 {correction}"""
-            click.echo(msg)
+
+        click.echo(msg)
 
 
 def clean_patch(patch):
