@@ -1,0 +1,3 @@
+[submodule "tests/samuel-r-delany_the-jewels-of-aptor"]
+	path = tests/samuel-r-delany_the-jewels-of-aptor
+	url = https://github.com/bensteinberg/samuel-r-delany_the-jewels-of-aptor
