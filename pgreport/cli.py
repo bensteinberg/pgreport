@@ -14,9 +14,10 @@ import humanize
 @click.option('--style',
               type=click.Choice(['PG', 'SE'], case_sensitive=False),
               default='SE')
+@click.option('--separator', default='\r\n')
 # add a mechanism for expressing the type of change:
 # error in OCR, typo in printed text, other?
-def run(repo, commits, style):
+def run(repo, commits, style, separator):
     """
     This is an experiment in generating error reports for Project Gutenberg
     from diffs in Standard Ebooks repositories.
@@ -103,7 +104,7 @@ File: {text_url.split("/")[-1]}"""
                 # get the line number of the match
                 (idx, orig) = [
                     (i + 1, j) for i, j
-                    in enumerate(text.split('\r\n'))
+                    in enumerate(text.split(separator))
                     if match in j
                 ][0]
                 # prepare correction string
