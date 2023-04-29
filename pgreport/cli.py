@@ -44,9 +44,9 @@ File: {filename}"""
 
     for c in corrections:
         if style == 'SE':
-            msg += c.se()
+            msg += c.se
         elif style == 'PG':
-            msg += c.pg()
+            msg += c.pg
 
     click.echo(msg)
 
@@ -103,14 +103,16 @@ class Correction:
             in enumerate(text.split('\r\n'))
             if self.match in j
         ][0]
+        self.se = self._se()
+        self.pg = self._pg()
 
-    def se(self):
+    def _se(self):
         m = re.search(r'^(\s+)', self.orig)
         leading = m.group(1) if m else ''
         correction = f"{leading}{' '.join(self.after[self.x:self.y])}"
         return self._output(correction)
 
-    def pg(self):
+    def _pg(self):
         correction = f'{self.before[self.actual]} ==> {self.after[self.actual]}'  # noqa
         return self._output(correction)
 
