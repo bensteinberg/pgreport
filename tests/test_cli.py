@@ -3,6 +3,7 @@ from click.testing import CliRunner
 from pgreport.cli import run
 import io
 import re
+import json
 
 
 @pytest.fixture
@@ -111,3 +112,15 @@ def test_multi_commit(mock):
         4550,
         3138
     ]
+
+
+def test_single_commit_json(mock):
+    runner = CliRunner()
+    result = runner.invoke(run, [
+        'tests/samuel-r-delany_the-jewels-of-aptor', '094f64f',
+        '--output', 'json'
+    ])
+
+    assert result.exit_code == 0
+    with open('tests/094f64f.json') as f:
+        assert json.load(f) == json.loads(result.output)

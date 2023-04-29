@@ -5,6 +5,7 @@ import pygit2
 import re
 import requests
 from bs4 import BeautifulSoup
+import json
 import humanize
 
 
@@ -14,12 +15,15 @@ pg = 'https://www.gutenberg.org'
 @click.command()
 @click.argument('repo')
 @click.argument('commits', nargs=-1)
+@click.option('--output',
+              type=click.Choice(['text', 'json'], case_sensitive=False),
+              default='text')
 @click.option('--style',
               type=click.Choice(['PG', 'SE'], case_sensitive=False),
               default='SE')
 # add a mechanism for expressing the type of change:
 # error in OCR, typo in printed text, other?
-def run(repo, commits, style):
+def run(repo, commits, output, style):
     """
     This is an experiment in generating error reports for Project Gutenberg
     from diffs in Standard Ebooks repositories.
@@ -27,24 +31,17 @@ def run(repo, commits, style):
     Run with a path to a REPO and the hashes for one or more COMMITS.
     """
     (title, author, source_url) = se_data(repo)
+    number = source_url.split("/")[-1]
 
     (release_date, filename, text) = pg_data(source_url)
 
     corrections = get_corrections(repo, commits, text, style)
 
-    # prepare output
-    s = '' if len(corrections) == 1 else 's'
-    count = humanize.apnumber(len(corrections))
-    msg = f"""Hi, I’ve been proofing {title} and found {count} error{s}:
-
-Title: {title}, by {author}
-Release Date: {release_date} [EBook #{source_url.split("/")[-1]}]
-
-File: {filename}"""
-    for c in corrections:
-        msg += str(c)
-
-    click.echo(msg)
+    r = Report(title, author, release_date, filename, number, corrections)
+    if output == 'json':
+        click.echo(json.dumps(r, default=vars))
+    elif output == 'text':
+        click.echo(r)
 
 
 def get_corrections(repo, commits, text, style):
@@ -61,6 +58,30 @@ def get_corrections(repo, commits, text, style):
             for change in changes:
                 corrections.append(Correction(change, text, style))
     return corrections
+
+
+class Report:
+    def __init__(self, title, author, release_date,
+                 filename, number, corrections):
+        self.title = title
+        self.author = author
+        self.release_date = release_date
+        self.filename = filename
+        self.number = number
+        self.corrections = corrections
+
+    def __str__(self):
+        s = '' if len(self.corrections) == 1 else 's'
+        count = humanize.apnumber(len(self.corrections))
+        msg = f"""Hi, I’ve been proofing {self.title} and found {count} error{s}:
+
+Title: {self.title}, by {self.author}
+Release Date: {self.release_date} [EBook #{self.number}]
+
+File: {self.filename}"""  # noqa
+        for c in self.corrections:
+            msg += str(c)
+        return msg
 
 
 class Correction:
