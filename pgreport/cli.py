@@ -30,16 +30,30 @@ def run(repo, commits, style):
 
     (release_date, filename, text) = pg_data(source_url)
 
-    # prepare the first part of the message
-    msg = f"""Hi, I’ve been proofing {title} and found PLACEHOLDER:
+    corrections = get_corrections(repo, commits, text)
+
+    # prepare output
+    s = '' if len(corrections) == 1 else 's'
+    count = humanize.apnumber(len(corrections))
+    msg = f"""Hi, I’ve been proofing {title} and found {count} error{s}:
 
 Title: {title}, by {author}
 Release Date: {release_date} [EBook #{source_url.split("/")[-1]}]
 
 File: {filename}"""
 
+    for c in corrections:
+        if style == 'SE':
+            msg += c.se()
+        elif style == 'PG':
+            msg += c.pg()
+
+    click.echo(msg)
+
+
+def get_corrections(repo, commits, text):
     repository = pygit2.Repository(repo)
-    corrections = 0
+    corrections = []
 
     for commit in commits:
         # get the diff between the specified commit (or HEAD)
@@ -49,60 +63,63 @@ File: {filename}"""
 
         if changes := clean_patch(diff.patch):
             for change in changes:
-                before = change[0]
-                after = change[1]
-                # the problem here is that lines in SE XHTML are different from
-                # the lines in PG plain text, so we need to control the amount
-                # of context --
-                # get the index of the actual change; because the removal of a
-                # space will make the lengths of the word lists different, step
-                # downward through possible lengths
-                extent = max(len(before), len(after))
-                while True:
-                    try:
-                        actual = [
-                            before[i] != after[i] for i in range(extent)
-                        ].index(True)
-                        break
-                    except IndexError:
-                        extent -= 1
-                # get the bounds of the largest match including the
-                # actual change
-                (x, y) = sorted([
-                    (x, y)
-                    for x in range(actual + 1)
-                    for y in range(actual, len(before) + 1)
-                    if ' '.join(before[x:y]) in text
-                    and before[actual] in ' '.join(before[x:y])
-                ], key=lambda tup: tup[1] - tup[0])[-1]
-                match = ' '.join(before[x:y])
-                # get the line number of the match
-                (idx, orig) = [
-                    (i + 1, j) for i, j
-                    in enumerate(text.split('\r\n'))
-                    if match in j
-                ][0]
-                # prepare correction string
-                if style == 'SE':
-                    # get leading whitespace if any
-                    m = re.search(r'^(\s+)', orig)
-                    leading = m.group(1) if m else ''
-                    correction = f"{leading}{' '.join(after[x:y])}"
-                else:
-                    correction = f'{before[actual]} ==> {after[actual]}'
-                corrections += 1
-                msg += f"""
+                corrections.append(Correction(change, text))
+    return corrections
 
-Line {idx}:
-{orig}
+
+class Correction:
+    def __init__(self, change, text):
+        self.before = change[0]
+        self.after = change[1]
+        # the problem here is that lines in SE XHTML are different from
+        # the lines in PG plain text, so we need to control the amount
+        # of context --
+        # get the index of the actual change; because the removal of a
+        # space will make the lengths of the word lists different, step
+        # downward through possible lengths
+        extent = max(len(self.before), len(self.after))
+        while True:
+            try:
+                # this should be (and will be) actuals
+                self.actual = [
+                    self.before[i] != self.after[i] for i in range(extent)
+                ].index(True)
+                break
+            except IndexError:
+                extent -= 1
+        # get the bounds of the largest match including the
+        # actual change
+        (self.x, self.y) = sorted([
+            (x, y)
+            for x in range(self.actual + 1)
+            for y in range(self.actual, len(self.before) + 1)
+            if ' '.join(self.before[x:y]) in text
+            and self.before[self.actual] in ' '.join(self.before[x:y])
+        ], key=lambda tup: tup[1] - tup[0])[-1]
+        self.match = ' '.join(self.before[self.x:self.y])
+        # get the line number of the match
+        (self.idx, self.orig) = [
+            (i + 1, j) for i, j
+            in enumerate(text.split('\r\n'))
+            if self.match in j
+        ][0]
+
+    def se(self):
+        m = re.search(r'^(\s+)', self.orig)
+        leading = m.group(1) if m else ''
+        correction = f"{leading}{' '.join(self.after[self.x:self.y])}"
+        return self._output(correction)
+
+    def pg(self):
+        correction = f'{self.before[self.actual]} ==> {self.after[self.actual]}'  # noqa
+        return self._output(correction)
+
+    def _output(self, correction):
+        return f"""
+
+Line {self.idx}:
+{self.orig}
 {correction}"""
-
-    # fill in placeholder
-    s = '' if corrections == 1 else 's'
-    count = humanize.apnumber(corrections)
-    msg = msg.replace('PLACEHOLDER', f'{count} error{s}')
-
-    click.echo(msg)
 
 
 def se_data(repo):
