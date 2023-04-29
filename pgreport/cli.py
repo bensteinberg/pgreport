@@ -30,7 +30,7 @@ def run(repo, commits, style):
 
     (release_date, filename, text) = pg_data(source_url)
 
-    corrections = get_corrections(repo, commits, text)
+    corrections = get_corrections(repo, commits, text, style)
 
     # prepare output
     s = '' if len(corrections) == 1 else 's'
@@ -41,17 +41,13 @@ Title: {title}, by {author}
 Release Date: {release_date} [EBook #{source_url.split("/")[-1]}]
 
 File: {filename}"""
-
     for c in corrections:
-        if style == 'SE':
-            msg += c.se
-        elif style == 'PG':
-            msg += c.pg
+        msg += str(c)
 
     click.echo(msg)
 
 
-def get_corrections(repo, commits, text):
+def get_corrections(repo, commits, text, style):
     repository = pygit2.Repository(repo)
     corrections = []
 
@@ -63,12 +59,12 @@ def get_corrections(repo, commits, text):
 
         if changes := clean_patch(diff.patch):
             for change in changes:
-                corrections.append(Correction(change, text))
+                corrections.append(Correction(change, text, style))
     return corrections
 
 
 class Correction:
-    def __init__(self, change, text):
+    def __init__(self, change, text, style):
         self.before = change[0]
         self.after = change[1]
         # the problem here is that lines in SE XHTML are different from
@@ -103,8 +99,13 @@ class Correction:
             in enumerate(text.split('\r\n'))
             if self.match in j
         ][0]
-        self.se = self._se()
-        self.pg = self._pg()
+        self.style = style
+
+    def __str__(self):
+        if self.style == 'SE':
+            return self._se()
+        elif self.style == 'PG':
+            return self._pg()
 
     def _se(self):
         m = re.search(r'^(\s+)', self.orig)
