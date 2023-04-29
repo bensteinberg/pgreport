@@ -8,6 +8,9 @@ from bs4 import BeautifulSoup
 import humanize
 
 
+pg = 'https://www.gutenberg.org'
+
+
 @click.command()
 @click.argument('repo')
 @click.argument('commits', nargs=-1)
@@ -24,36 +27,9 @@ def run(repo, commits, style, separator):
 
     Run with a path to a REPO and the hashes for one or more COMMITS.
     """
-    # read SE epub metadata
-    pg = 'https://www.gutenberg.org'
-    opf = Path(repo) / 'src/epub/content.opf'
-    root = ET.parse(opf).getroot()
-    # get the PG source URL
-    source_url = root.find('.//{http://purl.org/dc/elements/1.1/}source').text
-    if not source_url.startswith(pg):
-        # but maybe this can be extended to non-PG sources
-        raise click.ClickException('The source is not PG')
-    # get the title
-    title = root.find('.//{http://purl.org/dc/elements/1.1/}title').text
-    # get the author
-    author = root.find('.//{http://purl.org/dc/elements/1.1/}creator').text
+    (title, author, source_url) = se_data(repo)
 
-    # get the URL of the book's plain text from PG
-    r1 = requests.get(source_url)
-    soup = BeautifulSoup(r1.text, 'html.parser')
-    text_url = soup.find(
-        'td',
-        property='dcterms:format',
-        content='text/plain'
-    ).a.attrs['href']
-    # get the PG release date
-    release_date = soup.find(
-        'td',
-        itemprop='datePublished'
-    ).string
-    # get the book's plain text
-    r2 = requests.get(pg + text_url)
-    text = r2.text
+    (release_date, filename, text) = pg_data(source_url)
 
     # prepare the first part of the message
     msg = f"""Hi, I’ve been proofing {title} and found PLACEHOLDER:
@@ -61,7 +37,7 @@ def run(repo, commits, style, separator):
 Title: {title}, by {author}
 Release Date: {release_date} [EBook #{source_url.split("/")[-1]}]
 
-File: {text_url.split("/")[-1]}"""
+File: {filename}"""
 
     repository = pygit2.Repository(repo)
     corrections = 0
@@ -128,6 +104,43 @@ Line {idx}:
     msg = msg.replace('PLACEHOLDER', f'{count} error{s}')
 
     click.echo(msg)
+
+
+def se_data(repo):
+    # read SE epub metadata
+    opf = Path(repo) / 'src/epub/content.opf'
+    root = ET.parse(opf).getroot()
+    # get the PG source URL
+    source_url = root.find('.//{http://purl.org/dc/elements/1.1/}source').text
+    if not source_url.startswith(pg):
+        # but maybe this can be extended to non-PG sources
+        raise click.ClickException('The source is not PG')
+    # get the title
+    title = root.find('.//{http://purl.org/dc/elements/1.1/}title').text
+    # get the author
+    author = root.find('.//{http://purl.org/dc/elements/1.1/}creator').text
+    return (title, author, source_url)
+
+
+def pg_data(source_url):
+    # get the URL of the book's plain text from PG
+    r1 = requests.get(source_url)
+    soup = BeautifulSoup(r1.text, 'html.parser')
+    text_url = soup.find(
+        'td',
+        property='dcterms:format',
+        content='text/plain'
+    ).a.attrs['href']
+    filename = text_url.split("/")[-1]
+    # get the PG release date
+    release_date = soup.find(
+        'td',
+        itemprop='datePublished'
+    ).string
+    # get the book's plain text
+    r2 = requests.get(pg + text_url)
+    text = r2.text
+    return (release_date, filename, text)
 
 
 def clean_patch(patch):
