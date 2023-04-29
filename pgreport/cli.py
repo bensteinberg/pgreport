@@ -17,10 +17,9 @@ pg = 'https://www.gutenberg.org'
 @click.option('--style',
               type=click.Choice(['PG', 'SE'], case_sensitive=False),
               default='SE')
-@click.option('--separator', default='\r\n')
 # add a mechanism for expressing the type of change:
 # error in OCR, typo in printed text, other?
-def run(repo, commits, style, separator):
+def run(repo, commits, style):
     """
     This is an experiment in generating error reports for Project Gutenberg
     from diffs in Standard Ebooks repositories.
@@ -80,7 +79,7 @@ File: {filename}"""
                 # get the line number of the match
                 (idx, orig) = [
                     (i + 1, j) for i, j
-                    in enumerate(text.split(separator))
+                    in enumerate(text.split('\r\n'))
                     if match in j
                 ][0]
                 # prepare correction string
