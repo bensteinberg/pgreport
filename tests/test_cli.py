@@ -56,7 +56,6 @@ def test_single_commit_multi_changes_including_on_second_line(mock):
     assert 'Line 3507:\nwind-burned."\nwind-burned." ==> windburned."' in result.output  # noqa
 
 
-@pytest.mark.xfail(reason='Not yet implemented')
 def test_single_commit_multi_changes_in_one_line(mock):
     runner = CliRunner()
     result = runner.invoke(run, [
@@ -64,7 +63,7 @@ def test_single_commit_multi_changes_in_one_line(mock):
     ])
 
     assert result.exit_code == 0
-    assert result.output.endswith("Line 2024:\nup a marlin pin, ==> a marlinspike,")  # noqa
+    assert "Line 2024:\nJordde suddenly seized up a marlin pin, raised it, and shouted at Urson,\nup a marlin pin, ==> a marlinspike," in result.output  # noqa
 
 
 def test_multi_commit(mock):

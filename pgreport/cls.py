@@ -26,35 +26,32 @@ File: {self.filename}"""  # noqa
 
 
 class Correction:
+    """
+    The problem here is that lines in SE XHTML are different from the
+    lines in PG plain text; the former are whole paragraphs.
+    """
     def __init__(self, change, text):
         self.before = change[0]
         self.after = change[1]
-        # the problem here is that lines in SE XHTML are different from
-        # the lines in PG plain text, so we need to control the amount
-        # of context --
-        # get the index of the actual change; because the removal of a
-        # space will make the lengths of the word lists different, step
-        # downward through possible lengths
-        extent = max(len(self.before), len(self.after))
-        while True:
-            try:
-                # this should be (and will be) actuals
-                self.actual = [
-                    self.before[i] != self.after[i] for i in range(extent)
-                ].index(True)
-                break
-            except IndexError:
-                extent -= 1
+
+        # get the start and end indices of the actual change
+        self.start = get_index(self.before, self.after)
+        backwards_idx = get_index(self.before, self.after, rev=True)
+        self.before_end = len(self.before) - backwards_idx
+        self.after_end = len(self.after) - backwards_idx
+
         # get the bounds of the largest match including the
         # actual change
+        actual = ' '.join(self.before[self.start:self.before_end])
         (self.x, self.y) = sorted([
             (x, y)
-            for x in range(self.actual + 1)
-            for y in range(self.actual, len(self.before) + 1)
+            for x in range(self.start + 1)
+            for y in range(self.start, len(self.before) + 1)
             if ' '.join(self.before[x:y]) in text
-            and self.before[self.actual] in ' '.join(self.before[x:y])
+            and actual in ' '.join(self.before[x:y])
         ], key=lambda tup: tup[1] - tup[0])[-1]
         self.match = ' '.join(self.before[self.x:self.y])
+
         # get the line number of the match
         (self.idx, self.orig) = [
             (i + 1, j) for i, j
@@ -63,9 +60,24 @@ class Correction:
         ][0]
 
     def __str__(self):
-        correction = f'{self.before[self.actual]} ==> {self.after[self.actual]}'  # noqa
+        before = ' '.join(self.before[self.start:self.before_end])
+        after = ' '.join(self.after[self.start:self.after_end])
+        correction = f'{before} ==> {after}'  # noqa
         return f"""
 
 Line {self.idx}:
 {self.orig}
 {correction}"""
+
+
+def get_index(before, after, rev=False):
+    """
+    Get index of first (or last) difference
+    """
+    if rev:
+        before = before[::-1]
+        after = after[::-1]
+    return [
+        before[i] != after[i]
+        for i in range(min(len(before), len(after)))
+    ].index(True)
