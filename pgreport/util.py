@@ -74,7 +74,7 @@ def clean_patch(patch):
     assert len(befores) == len(afters)
 
     return [
-        (befores[i].split(), afters[i].split())
+        (befores[i].split(' '), afters[i].split(' '))
         for i in range(len(befores))
     ]
 
