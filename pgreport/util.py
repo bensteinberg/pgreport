@@ -80,6 +80,8 @@ def clean_patch(patch):
 
 
 def extract_text(p, marker):
+    WORD_JOINER = "\u2060"
+    HAIR_SPACE = "\u200a"
     # this may need to do additional work, like undoing SE ellipse-handling
     return [
         re.sub(
@@ -92,6 +94,9 @@ def extract_text(p, marker):
             '’', "'"
         ).replace(
             '‘', "'"
+        ).replace(
+            # this is one limited case...
+            f'{WORD_JOINER}{HAIR_SPACE}{WORD_JOINER}…{HAIR_SPACE}', "..."
         )
         for line in p.split('\n')
         if line.startswith(f'{marker}\t')

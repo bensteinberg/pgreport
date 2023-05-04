@@ -57,6 +57,7 @@ def test_single_commit_multi_changes_including_on_second_line(mock):
 
 
 def test_single_commit_multi_changes_in_one_line(mock):
+    # Test commit #1 for pgreport
     runner = CliRunner()
     result = runner.invoke(run, [
         'tests/samuel-r-delany_the-jewels-of-aptor', '9170165'
@@ -109,3 +110,27 @@ def test_single_commit_json(mock):
     assert result.exit_code == 0
     with open('tests/094f64f.json') as f:
         assert json.load(f) == json.loads(result.output)
+
+
+def test_change_in_line_with_ellipses(mock):
+    # Test commit #2 for pgreport
+    # this doesn't really test a change *containing* an ellipse
+    runner = CliRunner()
+    result = runner.invoke(run, [
+        'tests/samuel-r-delany_the-jewels-of-aptor', 'bf127d6'
+    ])
+
+    assert result.exit_code == 0
+    assert 'Line 2369:\n"Where?" asked Geo. "Huh...?" Through the thick growth was a rising\ngrowth ==> undergrowth' in result.output  # noqa
+
+
+def test_change_including_ellipse(mock):
+    # Test commit #3 for pgreport
+    runner = CliRunner()
+    result = runner.invoke(run, [
+        'tests/samuel-r-delany_the-jewels-of-aptor', '404049e'
+    ])
+
+    assert result.exit_code == 0
+    assert 'Line 3366' in result.output
+    assert 'they...?" ==> you think they...?" he began.' in result.output
