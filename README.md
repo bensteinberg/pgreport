@@ -6,10 +6,8 @@ errors to Project Gutenberg, based on commits to a Standard Ebooks
 repository. The default output is modeled on the example in [the SE
 page on reporting upstream
 errors](https://standardebooks.org/contribute/report-errors-upstream),
-but see also the [PG page on reporting
-errata](https://gutenberg.org/help/errata.html), which prefers a
-somewhat different format; you can select this format with the option
-`--style PG`.
+and the [PG page on reporting
+errata](https://gutenberg.org/help/errata.html).
 
 Installation
 ------------

@@ -11,10 +11,7 @@ from pgreport.util import se_data, pg_data, get_corrections
 @click.option('--output',
               type=click.Choice(['text', 'json'], case_sensitive=False),
               default='text', show_default=True)
-@click.option('--style',
-              type=click.Choice(['PG', 'SE'], case_sensitive=False),
-              default='SE', show_default=True)
-def run(repo, commits, output, style):
+def run(repo, commits, output):
     """
     This is an experiment in generating error reports for Project Gutenberg
     from diffs in Standard Ebooks repositories.
@@ -26,7 +23,7 @@ def run(repo, commits, output, style):
 
     (release_date, filename, text) = pg_data(source_url)
 
-    corrections = get_corrections(repo, commits, text, style)
+    corrections = get_corrections(repo, commits, text)
 
     r = Report(title, author, release_date, filename, number, corrections)
     if output == 'json':

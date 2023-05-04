@@ -39,20 +39,6 @@ def test_single_commit(mock):
 
     assert result.exit_code == 0
     assert "File: 41981.txt.utf-8" in result.output
-    # assert "Line 5966:" in result.output
-    assert "And it's twin is Argo's" in result.output
-    assert "And its twin is Argo's"
-
-
-def test_single_commit_pg_style(mock):
-    runner = CliRunner()
-    result = runner.invoke(run, [
-        'tests/samuel-r-delany_the-jewels-of-aptor', '094f64f',
-        '--style', 'PG'
-    ])
-
-    assert result.exit_code == 0
-    assert "File: 41981.txt.utf-8" in result.output
     assert "Line 5966:" in result.output
     assert "it's ==> its" in result.output
 
@@ -67,10 +53,10 @@ def test_single_commit_multi_changes_including_on_second_line(mock):
     assert "19 errors" in result.output
     assert "File: 41981.txt.utf-8" in result.output
 
-    assert 'Line 3507:\nwind-burned."\nwindburned."' in result.output
+    assert 'Line 3507:\nwind-burned."\nwind-burned." ==> windburned."' in result.output  # noqa
 
 
-@pytest.mark.xfail(reason='Correction line goes on too long')
+@pytest.mark.xfail(reason='Not yet implemented')
 def test_single_commit_multi_changes_in_one_line(mock):
     runner = CliRunner()
     result = runner.invoke(run, [
@@ -78,7 +64,7 @@ def test_single_commit_multi_changes_in_one_line(mock):
     ])
 
     assert result.exit_code == 0
-    assert result.output.endswith("Line 2024:\nJordde suddenly seized up a marlin pin, raised it, and shouted at Urson,\nJordde suddenly seized a marlinspike, raised it, and shouted at Urson,")  # noqa
+    assert result.output.endswith("Line 2024:\nup a marlin pin, ==> a marlinspike,")  # noqa
 
 
 def test_multi_commit(mock):

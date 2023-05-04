@@ -11,7 +11,7 @@ from pgreport.cls import Correction
 pg = 'https://www.gutenberg.org'
 
 
-def get_corrections(repo, commits, text, style):
+def get_corrections(repo, commits, text):
     repository = pygit2.Repository(repo)
     corrections = []
 
@@ -23,7 +23,7 @@ def get_corrections(repo, commits, text, style):
 
         if changes := clean_patch(diff.patch):
             for change in changes:
-                corrections.append(Correction(change, text, style))
+                corrections.append(Correction(change, text))
     return corrections
 
 

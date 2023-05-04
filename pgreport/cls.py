@@ -1,4 +1,3 @@
-import re
 import humanize
 
 
@@ -27,7 +26,7 @@ File: {self.filename}"""  # noqa
 
 
 class Correction:
-    def __init__(self, change, text, style):
+    def __init__(self, change, text):
         self.before = change[0]
         self.after = change[1]
         # the problem here is that lines in SE XHTML are different from
@@ -62,25 +61,9 @@ class Correction:
             in enumerate(text.split('\r\n'))
             if self.match in j
         ][0]
-        self.style = style
 
     def __str__(self):
-        if self.style == 'SE':
-            return self._se()
-        elif self.style == 'PG':
-            return self._pg()
-
-    def _se(self):
-        m = re.search(r'^(\s+)', self.orig)
-        leading = m.group(1) if m else ''
-        correction = f"{leading}{' '.join(self.after[self.x:self.y])}"
-        return self._output(correction)
-
-    def _pg(self):
         correction = f'{self.before[self.actual]} ==> {self.after[self.actual]}'  # noqa
-        return self._output(correction)
-
-    def _output(self, correction):
         return f"""
 
 Line {self.idx}:
