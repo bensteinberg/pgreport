@@ -1,3 +1,4 @@
+import json
 import humanize
 
 
@@ -10,6 +11,9 @@ class Report:
         self.filename = filename
         self.number = number
         self.corrections = corrections
+
+    def get_json(self):
+        return json.dumps(self, default=vars)
 
     def __str__(self):
         s = '' if len(self.corrections) == 1 else 's'

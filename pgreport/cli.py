@@ -1,5 +1,4 @@
 import click
-import json
 
 from pgreport.cls import Report
 from pgreport.util import se_data, pg_data, get_corrections
@@ -27,6 +26,6 @@ def run(repo, commits, output):
 
     r = Report(title, author, release_date, filename, number, corrections)
     if output == 'json':
-        click.echo(json.dumps(r, default=vars))
+        click.echo(r.get_json())
     elif output == 'text':
         click.echo(r)
