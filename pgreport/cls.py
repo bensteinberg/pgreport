@@ -63,6 +63,19 @@ class Correction:
             if self.match in j
         ][0]
 
+        # disambiguate correction if it occurs more than once in orig
+        direction = -1
+        while self.orig.count(
+                ' '.join(
+                    self.before[self.start:self.before_end]
+                )) > 1:
+            if direction < 0:
+                self.start = max(0, self.start - 1)
+            else:
+                self.before_end = min(len(self.before), self.before_end + 1)
+                self.after_end = min(len(self.after), self.after_end + 1)
+            direction = -direction
+
     def __str__(self):
         before = ' '.join(self.before[self.start:self.before_end])
         after = ' '.join(self.after[self.start:self.after_end])

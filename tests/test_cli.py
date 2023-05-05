@@ -134,3 +134,20 @@ def test_change_including_ellipse(mock):
     assert result.exit_code == 0
     assert 'Line 3366' in result.output
     assert 'they...?" ==> you think they...?" he began.' in result.output
+
+
+def test_expansion_of_context(mock):
+    """
+    Where the part of the correction before '==>' occurs more than once in the
+    PG source line, we need to disambiguate by adding context, so this commit's
+    correction should not be 'the ==> his'
+    """
+    # Test commit #4 for pgreport
+    runner = CliRunner()
+    result = runner.invoke(run, [
+        'tests/samuel-r-delany_the-jewels-of-aptor', 'db275a4'
+    ])
+
+    assert result.exit_code == 0
+    assert 'the ==> his' not in result.output
+    assert 'brought the ==> brought his' in result.output
