@@ -58,3 +58,16 @@ correctly identified in the PG text file by measuring the Levenshtein
 distance between the source and correction. This is slow, and probably
 not worth the effort, since each change requires human review in any
 case.
+
+Testing
+-------
+
+Run `poetry run pytest`. This will initialize and update a local copy
+of
+[bensteinberg/samuel-r-delany_the-jewels-of-aptor](https://github.com/bensteinberg/samuel-r-delany_the-jewels-of-aptor),
+which includes some synthetic commits for testing particular
+features. (Note that that repo has diverged from that of the [released
+book](https://github.com/standardebooks/samuel-r-delany_the-jewels-of-aptor).)
+
+The tests mock network requests to PG, so they can be run offline and
+to reduce unnecessary traffic during development.
