@@ -1,6 +1,8 @@
 pgreport
 ========
 
+![test status](https://github.com/bensteinberg/pgreport/actions/workflows/tests.yml/badge.svg) [![codecov](https://codecov.io/gh/bensteinberg/pgreport/branch/main/graph/badge.svg?token=E2OJWA905H)](https://codecov.io/gh/bensteinberg/pgreport)
+
 This is an experiment in semi-automating reports of transcription
 errors to Project Gutenberg, based on commits to a Standard Ebooks
 repository. The default output is modeled on the example in [the SE
