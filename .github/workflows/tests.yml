@@ -26,7 +26,6 @@ jobs:
         with:
           virtualenvs-create: true
           virtualenvs-in-project: true
-          virtualenvs-path: .venv
       #----------------------------------------------
       #       load cached venv if cache exists
       #----------------------------------------------
