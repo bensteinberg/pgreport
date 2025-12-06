@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pgreport"
-version = "0.1.9"
+version = "0.2.0"
 description = ""
 authors = ["Ben Steinberg <bsteinberg@law.harvard.edu>"]
 license = "GPL-3.0-or-later"
